@@ -21,14 +21,14 @@ app.UseHttpsRedirection();
 app.MapGet("/claims", () =>
 {
     return Results.Ok(claims.OrderBy(e => e.Id));
-}).WithName("GetAllClaims").WithTags("Claims");;
+}).WithName("GetAllClaims").WithTags("Claims");
 
 // CRUD: Get a single claim by ID
 app.MapGet("/claims/{id:int}", (int id) =>
 {
     var claim = claims.SingleOrDefault(c => c.Id == id);
     return claim == null ? Results.NotFound() : Results.Ok(claim);
-}).WithName("GetClaimById").WithTags("Claims");;;
+}).WithName("GetClaimById").WithTags("Claims");
 
 // CRUD: Create a new claim
 app.MapPost("/claims", (Claim newClaim) =>
@@ -40,7 +40,7 @@ app.MapPost("/claims", (Claim newClaim) =>
 
     claims.Add(newClaim);
     return Results.Created($"/claims/{newClaim.Id}", newClaim);
-}).WithName("CreateClaim").WithTags("Claims");;;
+}).WithName("CreateClaim").WithTags("Claims");
 
 // CRUD: Update an existing claim
 app.MapPut("/claims/{id:int}", (int id, Claim updatedClaim) =>
@@ -57,7 +57,7 @@ app.MapPut("/claims/{id:int}", (int id, Claim updatedClaim) =>
     existingClaim.Description = updatedClaim.Description;
 
     return Results.Ok(existingClaim);
-}).WithName("UpdateClaim").WithTags("Claims");;;
+}).WithName("UpdateClaim").WithTags("Claims");
 
 // CRUD: Delete a claim
 app.MapDelete("/claims/{id:int}", (int id) =>
@@ -70,7 +70,7 @@ app.MapDelete("/claims/{id:int}", (int id) =>
 
     claims = new List<Claim>(claims.Where(c => c.Id != id));
     return Results.NoContent();
-}).WithName("DeleteClaim").WithTags("Claims");;;
+}).WithName("DeleteClaim").WithTags("Claims");
 
 
 app.Run();
