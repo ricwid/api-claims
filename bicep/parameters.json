@@ -22,6 +22,7 @@
         "resourceGroup": "dev-rg-apim",
         "serviceName": "apim9999",
         "apiPath": "api/claims",
+        "apiUrl": "https://api-claims3218.azurewebsites.net",
         "apiSpecUrl": "https://api-claims3218.azurewebsites.net/openapi/v1.json",
         "apiId": "api-claims-v1",
         "apiRevision": "1"
