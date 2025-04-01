@@ -6,6 +6,12 @@ var claims = new List<Claim>
     new Claim { Id = 2, PolicyNumber = "P234567", ClaimAmount = 3200, Description = "Theft claim" }
 };
 
+var claimsV2 = new List<ClaimV2>
+{
+    new ClaimV2 { Id = 1, PolicyNumber = "P123456", ClaimAmount = 1500, Description = "Accident claim", Category = "Car" },
+    new ClaimV2 { Id = 2, PolicyNumber = "P234567", ClaimAmount = 3200, Description = "Theft claim", Category = "House" }
+};
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -18,9 +24,13 @@ app.MapOpenApi();
 app.UseHttpsRedirection();
 
 app.MapGet("/claims", () =>
-{
-    return Results.Ok(claims.OrderBy(e => e.Id));
-}).WithName("GetAllClaims").WithTags("Claims");
+    {
+        return Results.Ok(claimsV2.OrderBy(e => e.Id));
+    })
+    .WithName("GetAllClaims")
+    .WithTags("Claims")
+    .Produces<List<Claim>>(200);
+
 
 app.MapGet("/claims/{id:int}", (int id) =>
 {
@@ -37,7 +47,10 @@ app.MapPost("/claims", (Claim newClaim) =>
 
     claims.Add(newClaim);
     return Results.Created($"/claims/{newClaim.Id}", newClaim);
-}).WithName("CreateClaim").WithTags("Claims");
+})
+    .WithName("CreateClaim")
+    .Accepts<Claim>("application/json")
+    .WithTags("Claims");
 
 app.MapPut("/claims/{id:int}", (int id, Claim updatedClaim) =>
 {
