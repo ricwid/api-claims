@@ -17,20 +17,17 @@ var app = builder.Build();
 app.MapOpenApi();
 app.UseHttpsRedirection();
 
-// CRUD: Get all claims
 app.MapGet("/claims", () =>
 {
     return Results.Ok(claims.OrderBy(e => e.Id));
 }).WithName("GetAllClaims").WithTags("Claims");
 
-// CRUD: Get a single claim by ID
 app.MapGet("/claims/{id:int}", (int id) =>
 {
     var claim = claims.SingleOrDefault(c => c.Id == id);
     return claim == null ? Results.NotFound() : Results.Ok(claim);
 }).WithName("GetClaimById").WithTags("Claims");
 
-// CRUD: Create a new claim
 app.MapPost("/claims", (Claim newClaim) =>
 {
     if (claims.Any(c => c.Id == newClaim.Id))
@@ -42,7 +39,6 @@ app.MapPost("/claims", (Claim newClaim) =>
     return Results.Created($"/claims/{newClaim.Id}", newClaim);
 }).WithName("CreateClaim").WithTags("Claims");
 
-// CRUD: Update an existing claim
 app.MapPut("/claims/{id:int}", (int id, Claim updatedClaim) =>
 {
     var existingClaim = claims.SingleOrDefault(c => c.Id == id);
@@ -59,7 +55,6 @@ app.MapPut("/claims/{id:int}", (int id, Claim updatedClaim) =>
     return Results.Ok(existingClaim);
 }).WithName("UpdateClaim").WithTags("Claims");
 
-// CRUD: Delete a claim
 app.MapDelete("/claims/{id:int}", (int id) =>
 {
     var claimToRemove = claims.FirstOrDefault(c => c.Id == id);
@@ -72,6 +67,9 @@ app.MapDelete("/claims/{id:int}", (int id) =>
     return Results.NoContent();
 }).WithName("DeleteClaim").WithTags("Claims");
 
+app.MapGet("/ping", () => Results.Ok("pong"))
+    .WithName("Ping")
+    .WithTags("Claims");
 
 app.Run();
 
