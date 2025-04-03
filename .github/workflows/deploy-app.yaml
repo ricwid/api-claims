@@ -11,24 +11,17 @@ jobs:
     environment: dev
 
     steps:
-      # Step 1: Checkout Repository
       - name: Checkout repository
         uses: actions/checkout@v3
-      
-      # Step 2: Install Required Tools
-      # Ensure `jq` is installed on the runner.
+
       - name: Install jq
         run: sudo apt-get update && sudo apt-get install jq -y
 
-      # Step 3: Log in to Azure
-      # Authenticate with Azure using a service principal.
       - name: Log in to Azure
         uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
-      
-      # Step 4: Load Parameters
-      # Parses parameters.json into environment variables (e.g., $APP_NAME, $RESOURCE_GROUP, etc.)
+
       - name: Load Bicep parameters
         id: load-parameters
         run: |
@@ -55,24 +48,16 @@ jobs:
           echo "APIM_API_ID=$APIM_API_ID" >> $GITHUB_ENV      
           echo "APIM_API_REVISION=$APIM_API_REVISION" >> $GITHUB_ENV      
 
-      # Step 5: Deploy Azure Infrastructure Using Bicep
-      # Deploy resources (App Service, App Insights, etc.) using the Bicep template.
       - name: Deploy Bicep file to Azure
         uses: azure/arm-deploy@v1
         with:
           scope: resourcegroup
           subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           resourceGroupName: ${{ env.RESOURCE_GROUP }}
-          template: ./bicep/main.bicep  # Path to your Bicep file in the repository
-          parameters: ./bicep/parameters.json # Path to your parameter file in the repository
+          template: ./bicep/main.bicep
+          parameters: ./bicep/parameters.json
           deploymentMode: Incremental
 
-      - name: Reset Deployment Source
-        run: |
-          az webapp deployment source delete --resource-group ${{ env.RESOURCE_GROUP }} --name ${{ env.APP_NAME }}
-
-      # Step 6: Deploy Application Code
-      # Push your application code to the deployed App Service.      
       - name: Deploy Application Code
         run: |
           az webapp deployment source config \
@@ -81,25 +66,25 @@ jobs:
             --repo-url ${{ env.REPO_URL }} \
             --branch main \
             --manual-integration
-      
-      # Step 7: Update API Management with OpenAPI Spec
-      - name: Update API Management with OpenAPI Spec
+
+      - name: Trigger API Management Update Workflow
+        if: ${{ success() }} # Only triggers if previous steps succeed
         run: |
-          az apim api import \
-            --resource-group ${{ env.APIM_RESOURCE_GROUP }} \
-            --service-name ${{ env.APIM_SERVICENAME }} \
-            --path ${{ env.APIM_API_PATH }} \
-            --specification-format OpenApi \
-            --specification-url ${{ env.APIM_API_SPEC }} \
-            --api-id ${{ env.APIM_API_ID }} \
-            --api-revision ${{ env.APIM_API_REVISION }}
-          
-          az apim api update \
-                --resource-group ${{ env.APIM_RESOURCE_GROUP }} \
-                --service-name ${{ env.APIM_SERVICENAME }} \
-                --api-id ${{ env.APIM_API_ID }} \
-                --set serviceUrl=${{ env.APIM_API_URL }}        
-        env:
-          AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          curl -X POST -H "Accept: application/vnd.github.everest-preview+json" \
+            -H "Authorization: token ${{ secrets.APIM_TRIGGER_TOKEN }}" \
+            https://api.github.com/repos/ricwid/apim/dispatches \
+            -d '{
+              "event_type": "trigger-api-management",
+              "client_payload": {
+                "apim_service_name": "'${{ env.APIM_SERVICENAME }}'",
+                "backend_api_url": "'${{ env.APIM_API_URL }}'",
+                "resource_group": "'${{ env.APIM_RESOURCE_GROUP }}'",
+                "api_path": "'${{ env.APIM_API_PATH }}'",
+                "api_spec": "'${{ env.APIM_API_SPEC }}'",
+                "api_id": "'${{ env.APIM_API_ID }}'",
+                "api_revision": "'${{ env.APIM_API_REVISION }}'"
+              }
+            }'
+        
 
 
