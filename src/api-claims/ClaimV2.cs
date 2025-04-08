@@ -2,9 +2,9 @@
 
 public record ClaimV2
 {
-    public int Id { get; set; }
-    public string PolicyNumber { get; set; } = string.Empty;
-    public decimal ClaimAmount { get; set; }
-    public string Description { get; set; } = string.Empty;
-    public string Category { get; set; } = string.Empty;
+    public required int Id { get; set; }
+    public required string PolicyNumber { get; set; }
+    public required decimal ClaimAmount { get; set; }
+    public required string Description { get; set; }
+    public required string Category { get; set; }
 }
