@@ -66,6 +66,9 @@ jobs:
             --repo-url ${{ env.REPO_URL }} \
             --branch main \
             --manual-integration
+          az webapp deployment source sync \
+            --name ${{ env.APP_NAME }} \
+            --resource-group ${{ env.RESOURCE_GROUP }}
 
       - name: Trigger API Management Update Workflow
         if: ${{ success() }} # Only triggers if previous steps succeed
