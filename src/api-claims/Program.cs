@@ -25,7 +25,7 @@ app.UseHttpsRedirection();
 
 app.MapGet("/claims", () =>
     {
-        return Results.Ok(claimsV2.OrderBy(e => e.Id));
+        return Results.Ok(claims.OrderBy(e => e.Id));
     })
     .WithName("GetAllClaims")
     .WithTags("Claims")
